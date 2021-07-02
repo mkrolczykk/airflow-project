@@ -1,0 +1,12 @@
+.idea/
+*.iml
+.DS_Store
+venv
+airflow.db
+airflow-webserver.pid
+airflow.cfg
+.env
+temp
+logs
+trigger_file
+dags/__pycache__/
