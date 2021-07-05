@@ -2,7 +2,6 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.operators.dummy import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.models import DagRun, TaskInstance
@@ -20,8 +19,10 @@ def create_sub_dags(parent_dag_name,
         return dag_runs[0].execution_date if dag_runs else None
 
     def print_result(**context):
-        received_result = context['ti'].xcom_pull(key='result_value')
-        context = TaskInstance(task=context['task'], execution_date=datetime.now()).get_template_context()
+        received_result = context['ti'].xcom_pull(key='result_value', dag_id="table_name_1", include_prior_dates=True)
+        context = TaskInstance(task=context['task'],
+                               execution_date=datetime.now()
+                               ).get_template_context()
 
         print(str(received_result))
         print(context)
