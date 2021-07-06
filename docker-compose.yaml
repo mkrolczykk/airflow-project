@@ -99,6 +99,10 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./test:/opt/airflow/tests
+      - ./requirements.txt:/requirements.txt
 
   airflow-scheduler:
     <<: *airflow-common

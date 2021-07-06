@@ -126,7 +126,6 @@ def create_dag(dag_id,
                 "SELECT COUNT(*) FROM table_name_1;"
             ],
             python_callable=push_result_to_xcom,
-            provide_context=True
         )
 
 

@@ -5,11 +5,25 @@ from airflow.models import Variable
 from airflow.operators.subdag import SubDagOperator
 from airflow.sensors.filesystem import FileSensor
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.models import DagRun, TaskInstance
 
 from datetime import datetime
 
-from subdag_factory import create_sub_dags
 
+PATH = Variable.get('run_trigger_file_path',
+                    default_var=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'trigger_file/run.txt'))
+
+default_args = {
+    'schedule_interval': '@daily',
+    'start_date': datetime(2021, 7, 1, 22, 0, 0),
+}
+
+
+'''
+""" initialize mock run.txt file """
 def initialize_trigger_file():
     filename = 'trigger_file/run.txt'
     if not os.path.exists(os.path.dirname(filename)):
@@ -22,14 +36,7 @@ def initialize_trigger_file():
         f.write("")
 
 initialize_trigger_file()
-
-PATH = Variable.get('run_trigger_file_path',
-                    default_var=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'trigger_file/run.txt'))
-
-default_args = {
-    'schedule_interval': '@daily',
-    'start_date': datetime(2021, 7, 1, 22, 0, 0),
-}
+'''
 
 def create_dag(dag_id,
                default_args):
@@ -50,19 +57,66 @@ def create_dag(dag_id,
         )
 
         process_results = SubDagOperator(
-            subdag=create_sub_dags(parent_dag_name=dag_id,
-                                   child_dag_name='process_results_SubDAG',
-                                   start_date=default_args.get('start_date'),
-                                   schedule_interval=default_args.get('schedule_interval')),
-            task_id='process_results_SubDAG'
+            subdag=create_sub_dag(parent_dag_name=dag_id,
+                                  child_dag_name='process_results_SubDAG',
+                                  start_date=default_args.get('start_date'),
+                                  schedule_interval=default_args.get('schedule_interval')),
+            task_id='process_results_SubDAG',
+            dag=dag,
         )
 
         wait_run_task >> trigger_dag >> process_results
 
         return dag
 
-globals()['sensor'] = \
-    create_dag(
-        dag_id='sensor',
-        default_args=default_args,
+def create_sub_dag(parent_dag_name,
+                    child_dag_name,
+                    start_date,
+                    schedule_interval):
+
+    def get_execution_date(dag_id):
+        dag_runs = DagRun.find(dag_id=dag_id)
+        dag_runs.sort(key=lambda x: x.execution_date, reverse=True)
+
+        return dag_runs[0].execution_date if dag_runs else None
+
+    def print_result(**context):
+        received_result = context['ti'].xcom_pull(key='result_value', dag_id="table_name_1", include_prior_dates=True)
+        context = TaskInstance(task=context['task'],
+                               execution_date=datetime.now()
+                               ).get_template_context()
+
+        print(str(received_result))
+        print(context)
+
+    dag = DAG(
+        dag_id='{}.{}'.format(parent_dag_name, child_dag_name),
+        schedule_interval=schedule_interval,
+        start_date=start_date,
+        catchup=False
+    )
+
+    with dag:
+        sensor_triggered_dag = ExternalTaskSensor(task_id='sensor_triggered_dag',
+                                                  external_dag_id='table_name_1',
+                                                  external_task_id=None,
+                                                  execution_date_fn=lambda time: get_execution_date(
+                                                      'table_name_1'))
+
+        print_result = PythonOperator(task_id='print_result',
+                                      python_callable=print_result)
+
+        rm_run_file = BashOperator(task_id='remove_run_file',
+                                   bash_command="rm -f /opt/airflow/trigger_file/run.txt")
+
+        create_finished_timestamp = BashOperator(task_id='create_finished_timestamp',
+                                                 bash_command="touch finished_{{ ts_nodash }}")
+
+    sensor_triggered_dag >> print_result >> rm_run_file >> create_finished_timestamp
+
+    return dag
+
+globals()['sensor'] = create_dag(
+    dag_id='sensor',
+    default_args=default_args,
 )
