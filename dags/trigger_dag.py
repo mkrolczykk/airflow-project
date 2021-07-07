@@ -21,12 +21,10 @@ default_args = {
     'start_date': datetime(2021, 7, 1, 22, 0, 0),
 }
 
-
-'''
 """ initialize mock run.txt file """
 def initialize_trigger_file():
     filename = 'trigger_file/run.txt'
-    if not os.path.exists(os.path.dirname(filename)):
+    if not os.path.exists(os.path.os.path.dirname(filename)):
         try:
             os.makedirs(os.path.dirname(filename))
         except OSError as exc:
@@ -36,7 +34,7 @@ def initialize_trigger_file():
         f.write("")
 
 initialize_trigger_file()
-'''
+
 
 def create_dag(dag_id,
                default_args):

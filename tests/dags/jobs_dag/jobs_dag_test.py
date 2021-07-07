@@ -5,7 +5,7 @@ import unittest
 from airflow.models import DagBag
 
 ROOT_FOLDER = os.path.realpath(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir)
+    os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), os.pardir, os.pardir)
 )
 PATH = ROOT_FOLDER + "/dags"
 
@@ -34,7 +34,7 @@ class TestJobsDag(unittest.TestCase):
                               'create_table',
                               'table_exists',
                               'insert_row',
-                              'query_table']
+                              'postgre_sql_count_rows']
 
         for each in self.dag_ids:
             dag = self.dagbag.get_dag(each)
@@ -125,13 +125,13 @@ class TestJobsDag(unittest.TestCase):
 
             # check downstream tasks
             downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
-            self.assertListEqual(['query_table'], downstream_task_ids)
+            self.assertListEqual(['postgre_sql_count_rows'], downstream_task_ids)
 
-    def test_dependencies_of_query_table_task(self):
-        """ check the query_table task dependencies in jobs_dag.py """
+    def test_dependencies_of_postgre_sql_count_rows_task(self):
+        """ check the postgre_sql_count_rows task dependencies in jobs_dag.py """
         for each in self.dag_ids:
             dag = self.dagbag.get_dag(each)
-            tested_task = dag.get_task('query_table')
+            tested_task = dag.get_task('postgre_sql_count_rows')
 
             # check upstream tasks
             upstream_task_ids = list(map(lambda task: task.task_id, tested_task.upstream_list))
@@ -140,3 +140,7 @@ class TestJobsDag(unittest.TestCase):
             # check downstream tasks
             downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
             self.assertListEqual([], downstream_task_ids)
+
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestJobsDag)
+unittest.TextTestRunner(verbosity=2).run(suite)

@@ -101,7 +101,8 @@ services:
     restart: always
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./test:/opt/airflow/tests
+      - ./tests:/opt/airflow/tests
+      - ./plugins:/opt/airflow/plugins
       - ./requirements.txt:/requirements.txt
 
   airflow-scheduler:

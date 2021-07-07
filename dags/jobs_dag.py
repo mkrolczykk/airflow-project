@@ -7,7 +7,8 @@ from airflow.operators.dummy import DummyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.trigger_rule import TriggerRule
 
-from datetime import datetime, timezone
+from datetime import datetime
+from custom_operator.postgresql_count_rows import PostgreSQLCountRows
 
 default_args = {
     'table_name_1': {
@@ -27,42 +28,48 @@ default_args = {
     }
 }
 
+
+def print_context(number, unique_id, table_name):
+    print('DAG: {0}, with id: {1}, start processing table in database "airflow" and table name: {2}'
+          .format(str(number), unique_id, table_name))
+
+def check_table_exist_in_db(table_name):
+    sql_to_get_schema = "SELECT * FROM pg_tables;"
+    sql_to_check_table_exist = "SELECT * " \
+                               "FROM information_schema.tables " \
+                               "WHERE table_schema = '{}' AND table_name = '{}';"
+
+    hook = PostgresHook()
+
+    # get schema name
+    query = hook.get_records(sql=sql_to_get_schema)
+    for result in query:
+        if 'airflow' in result:
+            schema = result[0]
+            break
+
+    # check table exist
+    query = hook.get_first(sql=sql_to_check_table_exist.format(schema, table_name))
+
+    if query:
+        return 'table_exists'
+    else:
+        print("table {} does not exist, creating new one with the same name".format(table_name))
+        return 'create_table'
+
+'''
+def push_result_to_xcom(sql_query, **context):
+    hook = PostgresHook()
+
+    query_result = hook.get_records(sql=sql_query)
+    value = context['run_id'] + " ended"
+
+    context['task_instance'].xcom_push(key='result_value', value=query_result)
+    context['task_instance'].xcom_push(key='status', value=value)
+'''
 def create_dag(dag_id,
                dag_number,
                default_args):
-
-    def print_context(**context):
-        print('This is DAG: {} , with id: '.format(str(dag_number)) + dag_id + " start processing table in database 'airflow' and table name: " + default_args.get('table_name'))
-
-    def check_table_exist(sql_to_get_schema, sql_to_check_table_exist, table_name):    # mock table exist function
-        hook = PostgresHook()
-        # get schema name
-        query = hook.get_records(sql=sql_to_get_schema)
-        for result in query:
-            if 'airflow' in result:
-                schema = result[0]
-                print(schema)
-                break
-
-        # check table exist
-        query = hook.get_first(sql=sql_to_check_table_exist.format(schema, table_name))
-        print(query)
-
-        if query:
-            return 'table_exists'
-        else:
-            print("table {} does not exist, creating new one with the same name".format(table_name))
-            return 'create_table'
-
-    def push_result_to_xcom(sql_query, **context):
-        hook = PostgresHook()
-
-        query_result = hook.get_records(sql=sql_query)
-        value = context['run_id'] + " ended"
-
-        context['task_instance'].xcom_push(key='result_value', value=query_result)
-        context['task_instance'].xcom_push(key='status', value=value)
-
 
     dag = DAG(dag_id=dag_id,
               schedule_interval=default_args.get('schedule_interval'),
@@ -72,7 +79,8 @@ def create_dag(dag_id,
     with dag:
         print_process_start = PythonOperator(
             task_id='print_process_start',
-            python_callable=print_context
+            python_callable=print_context,
+            op_args=[dag_number, dag_id, default_args.get('table_name')]
         )
 
         get_current_user = BashOperator(
@@ -83,13 +91,8 @@ def create_dag(dag_id,
 
         check_table_exist = BranchPythonOperator(
             task_id='check_table_exist',
-            python_callable=check_table_exist,
-            op_args=[
-                "SELECT * FROM pg_tables;",
-                "SELECT * FROM information_schema.tables "
-                "WHERE table_schema = '{}'"
-                "AND table_name = '{}';",
-                 'table_name_1']
+            python_callable=check_table_exist_in_db,
+            op_args=['table_name_1']
         )
 
         create_table = PostgresOperator(
@@ -119,7 +122,7 @@ def create_dag(dag_id,
             parameters=(uuid.uuid4().int % 123456789, datetime.now()),
             trigger_rule=TriggerRule.NONE_FAILED_OR_SKIPPED
         )
-
+        '''
         query_table = PythonOperator(
             task_id='query_table',
             op_args=[
@@ -127,9 +130,15 @@ def create_dag(dag_id,
             ],
             python_callable=push_result_to_xcom,
         )
+        '''
+        
+        postgre_sql_count_rows = PostgreSQLCountRows(
+            task_id='postgre_sql_count_rows',
+            table_name='table_name_1'
+        )
 
 
-    print_process_start >> get_current_user >> check_table_exist >> [create_table, table_exists] >> insert_row >> query_table
+    print_process_start >> get_current_user >> check_table_exist >> [create_table, table_exists] >> insert_row >> postgre_sql_count_rows
 
     return dag
 

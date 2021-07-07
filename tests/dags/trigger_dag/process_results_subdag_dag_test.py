@@ -5,7 +5,7 @@ import unittest
 from airflow.models import DagBag
 
 ROOT_FOLDER = os.path.realpath(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir)
+    os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), os.pardir, os.pardir)
 )
 PATH = ROOT_FOLDER + "/dags"
 
@@ -89,3 +89,7 @@ class TestProcessResultSubdagDag(unittest.TestCase):
         # check downstream tasks
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual([], downstream_task_ids)
+
+
+suite = unittest.TestLoader().loadTestsFromTestCase(TestProcessResultSubdagDag)
+unittest.TextTestRunner(verbosity=2).run(suite)
