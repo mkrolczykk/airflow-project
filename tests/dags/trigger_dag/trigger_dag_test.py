@@ -23,13 +23,14 @@ class TestTriggerDag(unittest.TestCase):
     """ check task count of trigger_dag.py """
     def test_task_count(self):
         dag = self.dagbag.get_dag(self.dag_id)
-        self.assertEqual(3, len(dag.tasks))
+        self.assertEqual(4, len(dag.tasks))
 
     """ check task contains in trigger_dag.py """
     def test_contain_tasks(self):
-        expected_task_ids = ['wait_run_task',
-                              'trigger_dag',
-                              'process_results_SubDAG']
+        expected_task_ids = ['wait_run_file_task',
+                             'trigger_dag',
+                             'process_results_SubDAG',
+                             'alert_to_slack']
 
         dag = self.dagbag.get_dag(self.dag_id)
         tasks = dag.tasks
@@ -37,10 +38,10 @@ class TestTriggerDag(unittest.TestCase):
 
         self.assertListEqual(expected_task_ids, tasks_ids)
 
-    def test_dependencies_of_wait_run_task(self):
-        """ check the wait_run_task task dependencies in trigger_dag.py """
+    def test_dependencies_of_wait_run_file_task(self):
+        """ check the wait_run_file_task task dependencies in trigger_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
-        tested_task = dag.get_task('wait_run_task')
+        tested_task = dag.get_task('wait_run_file_task')
 
         # check upstream tasks
         upstream_task_ids = list(map(lambda task: task.task_id, tested_task.upstream_list))
@@ -57,7 +58,7 @@ class TestTriggerDag(unittest.TestCase):
 
         # check upstream tasks
         upstream_task_ids = list(map(lambda task: task.task_id, tested_task.upstream_list))
-        self.assertListEqual(['wait_run_task'], upstream_task_ids)
+        self.assertListEqual(['wait_run_file_task'], upstream_task_ids)
 
         # check downstream tasks
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
@@ -71,6 +72,19 @@ class TestTriggerDag(unittest.TestCase):
         # check upstream tasks
         upstream_task_ids = list(map(lambda task: task.task_id, tested_task.upstream_list))
         self.assertListEqual(['trigger_dag'], upstream_task_ids)
+
+        # check downstream tasks
+        downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
+        self.assertListEqual(['alert_to_slack'], downstream_task_ids)
+
+    def test_dependencies_of_alert_to_slack_task(self):
+        """ check the alert_to_slack task dependencies in trigger_dag.py """
+        dag = self.dagbag.get_dag(self.dag_id)
+        tested_task = dag.get_task('alert_to_slack')
+
+        # check upstream tasks
+        upstream_task_ids = list(map(lambda task: task.task_id, tested_task.upstream_list))
+        self.assertListEqual(['process_results_SubDAG'], upstream_task_ids)
 
         # check downstream tasks
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))

@@ -104,3 +104,7 @@ urllib3==1.26.6
 websocket-client==1.1.0
 Werkzeug==1.0.1
 WTForms==2.3.3
+
+python-dotenv~=0.18.0
+slack~=0.0.2
+pyslack~=0.5.0

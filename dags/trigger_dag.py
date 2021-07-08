@@ -2,7 +2,9 @@ import os
 import errno
 from airflow import DAG
 from airflow.models import Variable
+from airflow.hooks.base import BaseHook
 from airflow.operators.subdag import SubDagOperator
+from airflow.providers.slack.operators.slack import SlackAPIPostOperator
 from airflow.sensors.filesystem import FileSensor
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.operators.bash import BashOperator
@@ -44,8 +46,8 @@ def create_dag(dag_id,
               default_args=default_args)
 
     with dag:
-        wait_run_task = FileSensor(
-            task_id='wait_run_task',
+        wait_run_file_task = FileSensor(
+            task_id='wait_run_file_task',
             poke_interval=10,
             filepath=PATH
         )
@@ -63,7 +65,19 @@ def create_dag(dag_id,
             dag=dag,
         )
 
-        wait_run_task >> trigger_dag >> process_results
+        slack_token = BaseHook.get_connection('slack_connection').password
+        message = "test v1"
+
+        alert_to_slack = SlackAPIPostOperator(
+            task_id='alert_to_slack',
+            slack_conn_id='slack_connection',
+            token=slack_token,
+            text=message,
+            channel="airflowproject",
+            username='mkrolczyk'
+        )
+
+        wait_run_file_task >> trigger_dag >> process_results >> alert_to_slack
 
         return dag
 
