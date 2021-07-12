@@ -32,6 +32,11 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__SECRETS__BACKEND: airflow.contrib.secrets.hashicorp_vault.VaultBackend
     AIRFLOW__SECRETS__BACKEND_KWARGS: '{"url":"http://vault:8200","token":"ZyrP7NtNw0hbLUqu7N3IlTdO","variables_path":"variables","mount_point":"airflow","connections_path":"connections"}'
+    AIRFLOW__CORE__STORE_DAG_CODE: 'true'
+    AIRFLOW__CORE__STORE_SERIALIZED_DAGS: 'true'
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_UPDATE_INTERVAL: 30
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_FETCH_INTERVAL: 10
+
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
