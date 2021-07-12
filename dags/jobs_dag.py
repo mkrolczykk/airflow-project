@@ -1,8 +1,11 @@
 import uuid
+from typing import Dict
+
 from airflow import DAG
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator
+from airflow.decorators import task
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.trigger_rule import TriggerRule
@@ -27,11 +30,6 @@ default_args = {
         'table_name': 'table_name_3'
     }
 }
-
-
-def print_context(number, unique_id, table_name):
-    print('DAG: {0}, with id: {1}, start processing table in database "airflow" and table name: {2}'
-          .format(str(number), unique_id, table_name))
 
 def check_table_exist_in_db(table_name):
     sql_to_get_schema = "SELECT * FROM pg_tables;"
@@ -67,12 +65,15 @@ def create_dag(dag_id,
               catchup=False)
 
     with dag:
-        print_process_start = PythonOperator(
-            task_id='print_process_start',
-            python_callable=print_context,
-            op_args=[dag_number, dag_id, default_args.get('table_name')],
-            queue='jobs_queue'
-        )
+
+        @task(multiple_outputs=True)
+        def log_process_start(number, unique_id, table_name) -> Dict[str, str]:
+            print('DAG: {0}, with id: {1}, start processing table in database "airflow" and table name: {2}'
+                  .format(str(number), unique_id, table_name))
+
+            return {}
+
+        print_process_start = log_process_start(number=dag_number, unique_id=dag_id, table_name=default_args.get('table_name'))
 
         get_current_user = BashOperator(
             task_id='get_current_user',
@@ -130,10 +131,13 @@ def create_dag(dag_id,
 
     return dag
 
+
+""" register dags """
 for n in range(1, 4):
     dag_id = 'table_name_{}'.format(str(n))
     dag_number = n
 
     globals()[dag_id] = create_dag(dag_id,
-                                  dag_number,
-                                  default_args.get(list(default_args.keys())[n-1]))
+                                   dag_number,
+                                   default_args.get(list(default_args.keys())[n-1])
+                                   )

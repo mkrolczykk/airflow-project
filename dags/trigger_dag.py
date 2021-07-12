@@ -19,7 +19,6 @@ default_args = {
     'start_date': datetime(2021, 7, 1, 22, 0, 0),
 }
 
-
 """ initialize mock run.txt file for dag init purpose """
 def initialize_trigger_file():
     filename = 'trigger_file/run.txt'
@@ -66,7 +65,8 @@ def create_dag(dag_id,
         )
 
         client = hvac.Client(token=Variable.get(key='vault_client_token'),
-                             url='http://vault:8200')
+                             url='http://vault:8200'
+                             )
 
         slack_token = client.secrets.kv.v2.read_secret_version(
             path='variables/slack_token',
@@ -99,7 +99,10 @@ def create_sub_dag(parent_dag_name,
         return dag_runs[0].execution_date if dag_runs else None
 
     def print_result(**context):
-        received_result = context['ti'].xcom_pull(key='result_value', dag_id="table_name_1", include_prior_dates=True)
+        received_result = context['ti'].xcom_pull(key='result_value',
+                                                  dag_id=context['target_dag_id'],
+                                                  include_prior_dates=True
+                                                  )
         context = TaskInstance(task=context['task'],
                                execution_date=datetime.now()
                                ).get_template_context()
@@ -122,7 +125,9 @@ def create_sub_dag(parent_dag_name,
                                                       'table_name_1'))
 
         print_result = PythonOperator(task_id='print_result',
-                                      python_callable=print_result)
+                                      python_callable=print_result,
+                                      op_kwargs={'target_dag_id': 'table_name_1'}
+                                      )
 
         rm_run_file = BashOperator(task_id='remove_run_file',
                                    bash_command="rm -f /opt/airflow/trigger_file/run.txt")
@@ -134,6 +139,8 @@ def create_sub_dag(parent_dag_name,
 
     return dag
 
+
+""" register dag """
 globals()['sensor'] = create_dag(
     dag_id='sensor',
     default_args=default_args,
