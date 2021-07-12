@@ -1,8 +1,8 @@
 import os
 import errno
+import hvac
 from airflow import DAG
 from airflow.models import Variable
-from airflow.hooks.base import BaseHook
 from airflow.operators.subdag import SubDagOperator
 from airflow.providers.slack.operators.slack import SlackAPIPostOperator
 from airflow.sensors.filesystem import FileSensor
@@ -14,16 +14,13 @@ from airflow.models import DagRun, TaskInstance
 
 from datetime import datetime
 
-
-PATH = Variable.get('run_trigger_file_path',
-                    default_var=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'trigger_file/run.txt'))
-
 default_args = {
     'schedule_interval': '@daily',
     'start_date': datetime(2021, 7, 1, 22, 0, 0),
 }
 
-""" initialize mock run.txt file """
+
+""" initialize mock run.txt file for dag init purpose """
 def initialize_trigger_file():
     filename = 'trigger_file/run.txt'
     if not os.path.exists(os.path.os.path.dirname(filename)):
@@ -46,10 +43,13 @@ def create_dag(dag_id,
               default_args=default_args)
 
     with dag:
+        path = Variable.get('run_trigger_file_path',
+                            default_var=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'trigger_file/run.txt'))
+
         wait_run_file_task = FileSensor(
             task_id='wait_run_file_task',
             poke_interval=10,
-            filepath=PATH
+            filepath=path
         )
         trigger_dag = TriggerDagRunOperator(
             task_id='trigger_dag',
@@ -65,16 +65,22 @@ def create_dag(dag_id,
             dag=dag,
         )
 
-        slack_token = BaseHook.get_connection('slack_connection').password
-        message = "test v1"
+        client = hvac.Client(token=Variable.get(key='vault_client_token'),
+                             url='http://vault:8200')
+
+        slack_token = client.secrets.kv.v2.read_secret_version(
+            path='variables/slack_token',
+            mount_point='airflow'
+        )['data']['data']['value']
+
+        message = "test message v1"  # message to send
 
         alert_to_slack = SlackAPIPostOperator(
             task_id='alert_to_slack',
-            slack_conn_id='slack_connection',
             token=slack_token,
             text=message,
-            channel="airflowproject",
-            username='mkrolczyk'
+            channel="#airflowproject",
+            username='mkrolczyk',
         )
 
         wait_run_file_task >> trigger_dag >> process_results >> alert_to_slack

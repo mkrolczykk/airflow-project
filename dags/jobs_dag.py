@@ -57,16 +57,6 @@ def check_table_exist_in_db(table_name):
         print("table {} does not exist, creating new one with the same name".format(table_name))
         return 'create_table'
 
-'''
-def push_result_to_xcom(sql_query, **context):
-    hook = PostgresHook()
-
-    query_result = hook.get_records(sql=sql_query)
-    value = context['run_id'] + " ended"
-
-    context['task_instance'].xcom_push(key='result_value', value=query_result)
-    context['task_instance'].xcom_push(key='status', value=value)
-'''
 def create_dag(dag_id,
                dag_number,
                default_args):
@@ -80,19 +70,22 @@ def create_dag(dag_id,
         print_process_start = PythonOperator(
             task_id='print_process_start',
             python_callable=print_context,
-            op_args=[dag_number, dag_id, default_args.get('table_name')]
+            op_args=[dag_number, dag_id, default_args.get('table_name')],
+            queue='jobs_queue'
         )
 
         get_current_user = BashOperator(
             task_id='get_current_user',
             bash_command='whoami',
-            do_xcom_push=True
+            do_xcom_push=True,
+            queue='jobs_queue'
         )
 
         check_table_exist = BranchPythonOperator(
             task_id='check_table_exist',
             python_callable=check_table_exist_in_db,
-            op_args=['table_name_1']
+            op_args=['table_name_1'],
+            queue='jobs_queue'
         )
 
         create_table = PostgresOperator(
@@ -105,11 +98,13 @@ def create_dag(dag_id,
                     user_name VARCHAR (50) NOT NULL, 
                     timestamp TIMESTAMP NOT NULL
                 );
-            '''
+            ''',
+            queue='jobs_queue'
         )
 
         table_exists = DummyOperator(
-            task_id="table_exists"
+            task_id="table_exists",
+            queue='jobs_queue'
         )
 
         insert_row = PostgresOperator(
@@ -120,21 +115,14 @@ def create_dag(dag_id,
                 VALUES (%s, '{{ ti.xcom_pull(key="return_value", task_ids="get_current_user") }}', %s);
             ''',
             parameters=(uuid.uuid4().int % 123456789, datetime.now()),
-            trigger_rule=TriggerRule.NONE_FAILED_OR_SKIPPED
+            trigger_rule=TriggerRule.NONE_FAILED_OR_SKIPPED,
+            queue='jobs_queue'
         )
-        '''
-        query_table = PythonOperator(
-            task_id='query_table',
-            op_args=[
-                "SELECT COUNT(*) FROM table_name_1;"
-            ],
-            python_callable=push_result_to_xcom,
-        )
-        '''
         
         postgre_sql_count_rows = PostgreSQLCountRows(
             task_id='postgre_sql_count_rows',
-            table_name='table_name_1'
+            table_name='table_name_1',
+            queue='jobs_queue'
         )
 
 
