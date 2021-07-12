@@ -9,6 +9,7 @@ ROOT_FOLDER = os.path.realpath(
 )
 PATH = ROOT_FOLDER + "/dags"
 
+
 class TestJobsDag(unittest.TestCase):
     def setUp(self):
         self.dagbag = DagBag(include_examples=False, dag_folder=PATH)
