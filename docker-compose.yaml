@@ -36,12 +36,15 @@ x-airflow-common:
     AIRFLOW__CORE__STORE_SERIALIZED_DAGS: 'true'
     AIRFLOW__CORE__MIN_SERIALIZED_DAG_UPDATE_INTERVAL: 30
     AIRFLOW__CORE__MIN_SERIALIZED_DAG_FETCH_INTERVAL: 10
+    AIRFLOW__SMART_SENSOR__USE_SMART_SENSOR: 'true'
+    AIRFLOW__SMART_SENSOR__SHARD_CODE_UPPER_LIMIT: 10000
+    AIRFLOW__SMART_SENSOR__SHARDS: 3
+    AIRFLOW__SMART_SENSOR__SENSORS_ENABLED: NamedHivePartitionSensor, MetastorePartitionSensor, FileExtendedSensor
 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-#    - ./trigger_file/run.txt:/opt/airflow/trigger_file/run.txt
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
     redis:

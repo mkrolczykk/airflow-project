@@ -5,14 +5,17 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.subdag import SubDagOperator
 from airflow.providers.slack.operators.slack import SlackAPIPostOperator
-from airflow.sensors.filesystem import FileSensor
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.models import DagRun, TaskInstance
 
+from custom_sensor.file_sensor_extended import FileExtendedSensor
+
 from datetime import datetime
+
+
 
 default_args = {
     'schedule_interval': '@daily',
@@ -45,7 +48,7 @@ def create_dag(dag_id,
         path = Variable.get('run_trigger_file_path',
                             default_var=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'trigger_file/run.txt'))
 
-        wait_run_file_task = FileSensor(
+        wait_run_file_task = FileExtendedSensor(
             task_id='wait_run_file_task',
             poke_interval=10,
             filepath=path
