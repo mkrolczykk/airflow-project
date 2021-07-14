@@ -50,7 +50,8 @@ $ git clone https://github.com/mkrolczykG/gridU_airflow_course.git
 ```
 $ cd <project_cloned_folder>
 ```
-where <project_cloned_folder> is a path to project root directory
+where <project_cloned_folder> is a path to project root directory <br />
+
 2. Create and activate virtualenv: <br />
 * If no virtualenv package installed, run:
 ```
@@ -80,7 +81,7 @@ PROJECT_DIRECTORY_NAME - project root directory name
 ```
 $ docker-compose up airflow-init
 ```
-You will probably see, that most of the dag definition tests has failed, it's because we haven't configured the variables, connections <br /> 
+You will probably see, that most of the dag definition tests has failed, it's because we haven't configured the variables, connections
 and secret HashiCorp vault backend, which we will set in the next steps
 * Start airflow
 ```
@@ -90,7 +91,7 @@ Visit localhost:8080 via browser <br />
 login: airflow <br />
 password: airflow <br />
 
-After entering to airflow web ui page, there will appear an error ('Variable vault_url does not exist') related with loading slack token <br />
+After entering to airflow web ui page, there will appear an error ('Variable vault_url does not exist') related with loading slack token
 from HashiCorp vault - ignore this error
 
 Open Admin > Variables section and add following variables: <br />
@@ -147,7 +148,8 @@ $ airflow variables import ./local_variables.json
 ```
 $ airflow connections import ./local_connections.json
 ```
-Check in docker-compose log if tests has passed and if everything works correctly. 
+Check in docker-compose log if tests has passed and if everything works correctly. <br />
+The app should be ready to use.
 
 ## Status
 
