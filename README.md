@@ -45,7 +45,7 @@ environment, which allows run tests, etc in local directory without getting an e
 To run project, follow these steps: <br />
 1. Open terminal and clone the project from github repository:
 ```
-$ git clone https://github.com/mkrolczykG/gridU_airflow_course.git
+$ git clone https://github.com/gridu/AIRFLOW_mkrolczyk.git
 ```
 ```
 $ cd <project_cloned_folder>
