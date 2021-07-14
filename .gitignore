@@ -2,10 +2,14 @@
 *.iml
 .DS_Store
 venv
-airflow.db
-airflow-webserver.pid
-airflow.cfg
 .env
 temp
 logs
+# trigger_file/run.txt file
 trigger_file
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
