@@ -38,8 +38,8 @@ class TestEtlDag(unittest.TestCase):
 
         self.assertListEqual(expected_task_ids, tasks_ids)
 
+    """ check the download_data task dependencies in etl_dag.py """
     def test_dependencies_of_download_data_task(self):
-        """ check the download_data task dependencies in etl_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('download_data')
 
@@ -51,8 +51,8 @@ class TestEtlDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['count_the_number_of_accidents_per_year'], downstream_task_ids)
 
+    """ check the count_the_number_of_accidents_per_year task dependencies in etl_dag.py """
     def test_dependencies_of_count_the_number_of_accidents_per_year_task(self):
-        """ check the count_the_number_of_accidents_per_year task dependencies in etl_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('count_the_number_of_accidents_per_year')
 
@@ -64,8 +64,8 @@ class TestEtlDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['print_result'], downstream_task_ids)
 
+    """ check the print_result task dependencies in etl_dag.py """
     def test_dependencies_of_print_result_task(self):
-        """ check the print_result task dependencies in etl_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('print_result')
 

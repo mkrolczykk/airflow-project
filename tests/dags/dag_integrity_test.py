@@ -23,7 +23,7 @@ class TestDagIntegrity(unittest.TestCase):
     def test_dags_present(self):
         dags = len(self.dagbag.dag_ids)
 
-        self.assertEqual(5, dags)
+        self.assertEqual(6, dags)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestDagIntegrity)

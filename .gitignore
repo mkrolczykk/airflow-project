@@ -9,4 +9,3 @@ airflow.cfg
 temp
 logs
 trigger_file
-dags/__pycache__/

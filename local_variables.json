@@ -1,0 +1,5 @@
+{
+    "target_dag_to_trigger": "table_name_1",
+    "vault_client_token": "ZyrP7NtNw0hbLUqu7N3IlTdO",
+    "vault_url": "http://127.0.0.1:8200"
+}

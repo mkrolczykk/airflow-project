@@ -39,8 +39,8 @@ class TestTriggerDag(unittest.TestCase):
 
         self.assertListEqual(expected_task_ids, tasks_ids)
 
+    """ check the wait_run_file_task task dependencies in trigger_dag.py """
     def test_dependencies_of_wait_run_file_task(self):
-        """ check the wait_run_file_task task dependencies in trigger_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('wait_run_file_task')
 
@@ -52,8 +52,8 @@ class TestTriggerDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['trigger_dag'], downstream_task_ids)
 
+    """ check the trigger_dag task dependencies in trigger_dag.py """
     def test_dependencies_of_trigger_dag_task(self):
-        """ check the trigger_dag task dependencies in trigger_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('trigger_dag')
 
@@ -65,8 +65,8 @@ class TestTriggerDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['process_results_SubDAG'], downstream_task_ids)
 
+    """ check the process_results_SubDAG task dependencies in trigger_dag.py """
     def test_dependencies_of_process_results_SubDAG_task(self):
-        """ check the process_results_SubDAG task dependencies in trigger_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('process_results_SubDAG')
 
@@ -78,8 +78,8 @@ class TestTriggerDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['alert_to_slack'], downstream_task_ids)
 
+    """ check the alert_to_slack task dependencies in trigger_dag.py """
     def test_dependencies_of_alert_to_slack_task(self):
-        """ check the alert_to_slack task dependencies in trigger_dag.py """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('alert_to_slack')
 

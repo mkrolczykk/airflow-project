@@ -11,6 +11,7 @@ PATH = ROOT_FOLDER + "/dags"
 
 
 class TestProcessResultSubdagDag(unittest.TestCase):
+
     def setUp(self):
         self.dagbag = DagBag(include_examples=False, dag_folder=PATH)
         self.dag_id = "sensor.process_results_SubDAG"
@@ -39,8 +40,8 @@ class TestProcessResultSubdagDag(unittest.TestCase):
 
         self.assertListEqual(expected_task_ids, tasks_ids)
 
+    """ check sensor_triggered_dag task dependencies in process_results_SubDAG """
     def test_dependencies_of_sensor_triggered_dag_task(self):
-        """ check sensor_triggered_dag task dependencies in process_results_SubDAG """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('sensor_triggered_dag')
 
@@ -52,8 +53,8 @@ class TestProcessResultSubdagDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['print_result'], downstream_task_ids)
 
+    """ check print_result task dependencies in process_results_SubDAG """
     def test_dependencies_of_print_result_task(self):
-        """ check print_result task dependencies in process_results_SubDAG """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('print_result')
 
@@ -65,8 +66,8 @@ class TestProcessResultSubdagDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['remove_run_file'], downstream_task_ids)
 
+    """ check remove_run_file task dependencies in process_results_SubDAG """
     def test_dependencies_of_remove_run_file_task(self):
-        """ check remove_run_file task dependencies in process_results_SubDAG """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('remove_run_file')
 
@@ -78,8 +79,8 @@ class TestProcessResultSubdagDag(unittest.TestCase):
         downstream_task_ids = list(map(lambda task: task.task_id, tested_task.downstream_list))
         self.assertListEqual(['create_finished_timestamp'], downstream_task_ids)
 
+    """ check create_finished_timestamp task dependencies in process_results_SubDAG """
     def test_dependencies_of_create_finished_timestamp_task(self):
-        """ check create_finished_timestamp task dependencies in process_results_SubDAG """
         dag = self.dagbag.get_dag(self.dag_id)
         tested_task = dag.get_task('create_finished_timestamp')
 
