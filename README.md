@@ -50,6 +50,7 @@ $ git clone https://github.com/mkrolczykG/gridU_airflow_course.git
 ```
 $ cd <project_cloned_folder>
 ```
+where <project_cloned_folder> is a path to project root directory
 2. Create and activate virtualenv: <br />
 * If no virtualenv package installed, run:
 ```
@@ -60,6 +61,7 @@ $ pip3 install virtualenv
 ```
 $ python3 -m venv ENV_NAME
 ```
+where 'ENV_NAME' is the name of env
 * Activate virtualenv
 ```
 $ source ./ENV_NAME/bin/activate
@@ -71,20 +73,39 @@ $ source ./ENV_NAME/bin/activate
 4. Configure Airflow in Docker:
 * Change files and directories permissions to avoid permission deny inside docker container
 ```
-$ chmod 777 ../PROJECT_DIRECTORY_NAME/ -R
+$ chmod -R 777 ../PROJECT_DIRECTORY_NAME/
 ```
 PROJECT_DIRECTORY_NAME - project root directory name
 * Init docker-compose
 ```
 $ docker-compose up airflow-init
 ```
+You will probably see, that most of the dag definition tests has failed, it's because we haven't configured the variables, connections <br /> 
+and secret HashiCorp vault backend, which we will set in the next steps
 * Start airflow
 ```
 $ docker-compose up
 ```
-Visit localhost:8080 via browser to check if airflow works correctly. <br />
-After entering to airflow web ui page, there will appear an error related with loading slack token from HashiCorp vault. <br />
-To get rid of the error, follow these steps:
+Visit localhost:8080 via browser <br /> 
+login: airflow <br />
+password: airflow <br />
+
+After entering to airflow web ui page, there will appear an error ('Variable vault_url does not exist') related with loading slack token <br />
+from HashiCorp vault - ignore this error
+
+Open Admin > Variables section and add following variables: <br />
+* key: run_trigger_file_path, value: /opt/airflow/trigger_file/run.txt <br />
+* key: target_dag_to_trigger, value: table_name_1 <br />
+* key: vault_client_token, value: ZyrP7NtNw0hbLUqu7N3IlTdO <br />
+* key: vault_url, value: http://vault:8200 <br />
+
+Open Admin > Connection section and add following connections: <br />
+* Conn Id: fs_default, Conn Type: Postgres, Login: airflow, Password: airflow
+* Conn Id: postgres_default, Conn Type: Postgres, Host: host.docker.internal, Login: airflow, Password: airflow, Port: 5432
+* Conn Id: slack_connection, Conn Type: HTTP, Login: airflow, Password: YOUR_SLACK_TOKEN, Extra: {"token": "YOUR_SLACK_TOKEN"} <br />
+where YOUR_SLACK_TOKEN is an access token to the Slack API service <br />
+
+5. To get rid of the error from step 4, follow these steps:
 
 * Open new terminal (docker-compose must be running), perform the following actions:
 ```
@@ -93,7 +114,7 @@ $ cd <project_cloned_folder>
 ```
 $ docker exec -it VAULT_DOCKER_ID sh
 ```
-VAULT_DOCKER_ID - id of running vault container
+where 'VAULT_DOCKER_ID' is an id of running (active) vault container
 ```
 / # vault login ZyrP7NtNw0hbLUqu7N3IlTdO
 ```
@@ -103,16 +124,21 @@ VAULT_DOCKER_ID - id of running vault container
 ```
 / # vault kv put airflow/variables/slack_token value=YOUR_SLACK_TOKEN
 ```
-YOUR_SLACK_TOKEN - Access token to the Slack platform <br /> 
+where 'YOUR_SLACK_TOKEN' is an access token to the Slack API service <br /> 
 
-As a result you will have a Variables with id = ‘slack_token’. <br />
+As a result you will have a variable with id = ‘slack_token’. <br />
+#### IMPORTANT: Every time the docker-compose is turned off, step 5 must be repeated <br />
 Open trigger_dag.py file and custom 'slack_config' dict to your needs.
 
-5. Import pre-prepared airflow variables and connections from 'local_connections.json' and 'local_variables.json' files: <br />
+6. Import pre-prepared airflow variables and connections from 'local_connections.json' and 'local_variables.json' files: <br />
 * Open terminal and type
 ```
 $ cd <project_cloned_folder>
 ```
+* Activate venv if not active
+```
+$ source ./ENV_NAME/bin/activate
+``` 
 * Import airflow variables from 'local_variables.json' file
 ```
 $ airflow variables import ./local_variables.json
@@ -121,7 +147,7 @@ $ airflow variables import ./local_variables.json
 ```
 $ airflow connections import ./local_connections.json
 ```
-Check if everything works correctly. 
+Check in docker-compose log if tests has passed and if everything works correctly. 
 
 ## Status
 
