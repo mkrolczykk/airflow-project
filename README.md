@@ -1,5 +1,6 @@
 # GridU Airflow course project
-Airflow capstone project
+Airflow capstone project <br />
+Open 'the_content_of_the_task.md' file to read the task content
 
 ## Table of contents
 - [Project description](#project-description)
