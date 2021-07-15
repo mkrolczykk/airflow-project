@@ -15,14 +15,14 @@ Project consists of the following files: <br />
 This directory has 3 dags and add_dag_bags.py script. <br />
   etl_dag.py - dag which main goal is to download some sample data, count the number of accidents per year <br />
   and print the result in console. dag ID: 'etl_dag' <br />
-  trigger_dag.py - dag which wait for appear 'run.txt' file, then trigger selected dag with id set in target_dag_to_trigger <br />
+  trigger_dag.py - dag which wait for appear 'run.txt' file, then trigger selected dag with id set in target_dag_to_trigger
   airflow variable, run subdag from trigger_dag.py and send alert to configured slack channel at the end. dag ID: 'sensor' <br />
   jobs_dag.py - creates three of the same type dags, which tasks connect and work with postgreSQL. dags IDs: 'table_name_1', 'table_name_2', 'table_name_3' <br />
   add_dag_bags.py - a script to add additional DAGs folders if necessary <br />
 * plugins <br />
-This directory includes created postgre custom operator and sensor <br />
+This directory includes created postgre custom operator and smart sensor <br />
 * tests <br />
-Here you can find some dag definition tests <br /> <br />
+Here you can find some additional dag definition tests <br /> <br />
 
 'local_connections.json' and 'local_variables.json' includes pre-prepared airflow variables and connections in local <br />
 environment, which allows run tests, etc in local directory without getting an error
@@ -92,11 +92,11 @@ login: airflow <br />
 password: airflow <br />
 
 After entering to airflow web ui page, there will appear an error ('Variable vault_url does not exist') related with loading slack token
-from HashiCorp vault - ignore this error
+from HashiCorp vault - ignore this error, it will be fixed in next steps
 
 Open Admin > Variables section and add following variables: <br />
 * key: run_trigger_file_path, value: /opt/airflow/trigger_file/run.txt <br />
-* key: target_dag_to_trigger, value: table_name_1 <br />
+* key: target_dag_to_trigger, value: table_name_1 (here you can set a dag which will be triggered in trigger_dag.py dag) <br />
 * key: vault_client_token, value: ZyrP7NtNw0hbLUqu7N3IlTdO <br />
 * key: vault_url, value: http://vault:8200 <br />
 
