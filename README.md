@@ -10,20 +10,22 @@ Airflow capstone project
 - [Contact](#contact)
 
 ## Project description
-Project consists of the following files: <br />
+Project consists of the following directories: <br />
 * dags <br />
 This directory has 3 dags and add_dag_bags.py script. <br />
-  etl_dag.py - dag which main goal is to download some sample data, count the number of accidents per year <br />
+  etl_dag.py - dag which main goal is to download some sample data, count the number of accidents per year
   and print the result in console. dag ID: 'etl_dag' <br />
   trigger_dag.py - dag which wait for appear 'run.txt' file, then trigger selected dag with id set in target_dag_to_trigger
   airflow variable, run subdag from trigger_dag.py and send alert to configured slack channel at the end. dag ID: 'sensor' <br />
   jobs_dag.py - creates three of the same type dags, which tasks connect and work with postgreSQL. dags IDs: 'table_name_1', 'table_name_2', 'table_name_3' <br />
   add_dag_bags.py - a script to add additional DAGs folders if necessary <br />
 * plugins <br />
-This directory includes created postgre custom operator and smart sensor <br />
+This directory includes created postgre custom operator and smart sensor, which are used in dags <br />
 * tests <br />
-Here you can find some additional dag definition tests <br /> <br />
-
+Here you can find some additional dag definition tests <br />
+* trigger_file <br />
+a folder with mock 'run.txt' file required for trigger 'sensor' dag (trigger_dag.py) <br /> <br />
+  
 'local_connections.json' and 'local_variables.json' includes pre-prepared airflow variables and connections in local <br />
 environment, which allows run tests, etc in local directory without getting an error
 

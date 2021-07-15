@@ -5,8 +5,6 @@ venv
 .env
 temp
 logs
-# trigger_file/run.txt file
-trigger_file
 # Byte-compiled / optimized / DLL files
 __pycache__
 *.py[cod]
