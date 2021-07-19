@@ -100,7 +100,19 @@
 
 # Functional DAGs
   Hands-on exercise:
-  In the triggered DAG, you will have to change all Python Operators to PythonFunctionalOperator.
+  In the triggered DAG, you will have to change all Python Operators to PythonFunctionalOperator. <br />
+  Practice:
+
+  In order to train the acquired knowledge, you can write a simple ETL DAG consisting of three steps:
+
+  1. Download data from https://data.bloomington.in.gov/dataset/117733fb-31cb-480a-8b30-fbf425a690cd/resource/8673744e-53f2-42d1-9d05-4e412bd55c94/download/monroe-county-crash-data2003-to-2015.csv, this dataset is represent a collection of car accident.
+  2. Count the number of accidents per year.
+  3. Print results to the console.
+  
+  Requirements: <br />
+
+  - This DAG has to consist of three Functional operators. <br />
+  - The data from the source can be skewed. <br />
 
 # Smart Sensors
   1. Define new sensor and inherit it from FileSensor
