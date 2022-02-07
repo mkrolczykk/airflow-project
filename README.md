@@ -1,5 +1,4 @@
-# GridU Airflow course project
-Airflow capstone project <br />
+# Big data Apache Airflow project
 Open 'the_content_of_the_task.md' file to read the task content
 
 ## Table of contents
@@ -48,7 +47,7 @@ environment, which allows run tests, etc in local directory without getting an e
 To run project, follow these steps: <br />
 1. Open terminal and clone the project from github repository:
 ```
-$ git clone https://github.com/gridu/AIRFLOW_mkrolczyk.git
+$ git clone https://github.com/mkrolczyk12/airflow-project.git
 ```
 ```
 $ cd <project_cloned_folder>
@@ -160,7 +159,6 @@ _completed_
 
 ## Contact
 
-Created by @mkrolczykG - feel free to contact me!
+Created by @mkrolczyk12 - feel free to contact me!
 
-- Slack: Marcin Krolczyk
-- E-mail: mkrolczyk@griddynamics.com
+- E-mail: m.krolczyk66@gmail.com
