@@ -1,4 +1,4 @@
-# GridU Airflow course
+# Airflow project
 
 # DAG creation
   1. Create “jobs_dag.py” file.
