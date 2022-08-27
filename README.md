@@ -1,5 +1,4 @@
 # Big data Apache Airflow project
-Open 'the_content_of_the_task.md' file to read the task content
 
 ## Table of contents
 - [Project description](#project-description)
